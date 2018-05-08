@@ -16,7 +16,7 @@ class RGB:
     __g = None
     __b = None
 
-    __relevance0 = math.sqrt(3)*255   # rgb colors relevance = 0 when compare 2 rgb colors (diagonal of the rgb-cube 255x255x255)
+    __null_relevance = math.sqrt(3)*255   # rgb colors relevance = 0 when compare 2 rgb colors (diagonal of the rgb-cube 255x255x255)
 
     def __init__(self, r, g, b):
         if isinstance(r, int) and r >= 0 and r <= 255 and isinstance(g, int) and g >= 0 and g <= 255 and isinstance(b, int) and b >= 0 and b <= 255:
@@ -24,9 +24,9 @@ class RGB:
             self.__g = g
             self.__b = b
         if isinstance(r, float) and r >= 0.0 and r <= 1.0 and isinstance(g, float) and g >= 0.0 and g <= 1.0 and isinstance(b, float) and b >= 0.0 and b <= 1.0:
-            self.__r = 255 * r
-            self.__g = 255 * g
-            self.__b = 255 * b
+            self.__r = self.__from_linear(r) * 255
+            self.__g = self.__from_linear(g) * 255
+            self.__b = self.__from_linear(b) * 255
 
     def __repr__(self):
         return "RGB({},{},{})".format(self.__r, self.__g, self.__b)
@@ -65,7 +65,7 @@ class RGB:
     def relevance(rgb1, rgb2):
         if isinstance(rgb1, RGB) and isinstance(rgb2, RGB):
             relevancelengtn = (__class__.rgb_to_vector(rgb1) - __class__.rgb_to_vector(rgb2)).length
-            return 1 - relevancelengtn / __class__.__relevance0
+            return 1 - relevancelengtn / __class__.__null_relevance
         else:
             return 0
 
@@ -84,3 +84,23 @@ class RGB:
 
     def to_unit(self):
         return __class__.rgb_to_unit(self)
+    
+    @staticmethod
+    def set_null_relevance(new_null_relevance):
+        __class__.__null_relevance = new_null_relevance
+
+    @staticmethod
+    def __from_linear(value):
+        # value = 0...1 in linear scale (.5 = 127) -> return 0...1 in real acale (.5 = 188)
+        if value <= 0.0031308:
+            return 12.92 * value
+        else:
+            return 1.055 * value ** (1 / 2.4) - 0.055
+
+    @staticmethod
+    def __to_linear(value):
+        # value = 0...1 in real scale (.5 = 188) -> return 0...1 in linear scale (.5 = 127)
+        if value <= 0.04045:
+            return value / 12.92
+        else:
+            return ((value + 0.055) / 1.055) ** 2.4
