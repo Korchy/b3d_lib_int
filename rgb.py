@@ -3,7 +3,6 @@
 #
 # GitHub
 #   https://github.com/Korchy/b3d_lib_int
-#
 
 import math
 import re
@@ -24,9 +23,9 @@ class RGB:
             self.__g = g
             self.__b = b
         if isinstance(r, float) and r >= 0.0 and r <= 1.0 and isinstance(g, float) and g >= 0.0 and g <= 1.0 and isinstance(b, float) and b >= 0.0 and b <= 1.0:
-            self.__r = self.__from_linear(r) * 255
-            self.__g = self.__from_linear(g) * 255
-            self.__b = self.__from_linear(b) * 255
+            self.__r = int(self.__from_linear(r) * 255)
+            self.__g = int(self.__from_linear(g) * 255)
+            self.__b = int(self.__from_linear(b) * 255)
 
     def __str__(self):
         return "RGB({},{},{})".format(self.__r, self.__g, self.__b)
@@ -59,38 +58,46 @@ class RGB:
         else:
             return None
 
+    @staticmethod
+    def rgb_to_linear(rgb):
+        if isinstance(rgb, RGB):
+            return list(map(__class__.__to_linear, [rgb.r, rgb.g, rgb.b]))
+
+    def as_linear(self):
+        return __class__.rgb_to_linear(self)
+
+    @staticmethod
+    def rgb_to_hex(rgb):
+        return [hex(rgb.r)[2:].upper(), hex(rgb.g)[2:].upper(), hex(rgb.b)[2:].upper()]
+
+    def as_hex(self):
+        return __class__.rgb_to_hex(self)
+
     @classmethod
     def fromlist(cls, lst):
         # [0-255, 0-255, 0-255] or [0.0-1.0, 0.0-1.0, 0.0-1.0]
         return cls(lst[0], lst[1], lst[2])
 
     @staticmethod
+    def rgb_to_vector(rgb):
+        if isinstance(rgb, RGB):
+            return Vector((rgb.r, rgb.g, rgb.b))
+
+    def as_vector(self):
+        return __class__.rgb_to_vector(self)
+
+    @staticmethod
+    def set_null_relevance(new_null_relevance):
+        __class__.__null_relevance = new_null_relevance
+
+    @staticmethod
     def relevance(rgb1, rgb2):
+        # relevance 0...1 (between rgb1 and rgb2)
         if isinstance(rgb1, RGB) and isinstance(rgb2, RGB):
             relevancelengtn = (__class__.rgb_to_vector(rgb1) - __class__.rgb_to_vector(rgb2)).length
             return 1 - relevancelengtn / __class__.__null_relevance
         else:
             return 0
-
-    @staticmethod
-    def rgb_to_vector(rgb):
-        if isinstance(rgb, RGB):
-            return Vector((rgb.r, rgb.g, rgb.b))
-
-    def to_vector(self):
-        return __class__.rgb_to_vector(self)
-
-    @staticmethod
-    def rgb_to_unit(rgb):
-        if isinstance(rgb, RGB):
-            return [rgb.r / 255, rgb.g / 255, rgb.b / 255]
-
-    def to_unit(self):
-        return __class__.rgb_to_unit(self)
-    
-    @staticmethod
-    def set_null_relevance(new_null_relevance):
-        __class__.__null_relevance = new_null_relevance
 
     @staticmethod
     def __from_linear(value):
@@ -102,7 +109,8 @@ class RGB:
 
     @staticmethod
     def __to_linear(value):
-        # value = 0...1 in real scale (.5 = 188) -> return 0...1 in linear scale (.5 = 127)
+        # value = 0...255 in real scale (.5 = 188) -> return 0...1 in linear scale (.5 = 127)
+        value /= 255
         if value <= 0.04045:
             return value / 12.92
         else:
