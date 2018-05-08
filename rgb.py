@@ -28,6 +28,9 @@ class RGB:
             self.__g = self.__from_linear(g) * 255
             self.__b = self.__from_linear(b) * 255
 
+    def __str__(self):
+        return "RGB({},{},{})".format(self.__r, self.__g, self.__b)
+
     def __repr__(self):
         return "RGB({},{},{})".format(self.__r, self.__g, self.__b)
 
