@@ -9,7 +9,7 @@ import math
 from mathutils import Matrix
 
 
-class TransformMesh:
+class Transform:
 
     @staticmethod
     def rotate_object_local(obj, axis, angle, angle_unit='radians'):
